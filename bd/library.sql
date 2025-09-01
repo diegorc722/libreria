@@ -1,0 +1,136 @@
+DROP DATABASE IF EXISTS bd_biblioteca;
+CREATE DATABASE bd_biblioteca DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+USE bd_biblioteca;
+
+CREATE TABLE administrador (
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	nombre VARCHAR(100) NOT NULL,
+	correo VARCHAR(120) NOT NULL,
+	usuario VARCHAR(100) NOT NULL,
+	clave VARCHAR(100) NOT NULL,
+	fechaActualizada TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO administrador (nombre, correo, usuario, clave, fechaActualizada) VALUES
+('Diego Reyes', 'diego.reyescar@correoaiep.cl', 'admin', 'e6e061838856bf47e1de730719fb2609', '2025-06-28 16:06:08');
+
+CREATE TABLE estudiante (
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	codigo VARCHAR(20) NOT NULL UNIQUE,
+	nombres VARCHAR(120) NOT NULL,
+	correo VARCHAR(120) NOT NULL,
+	celular CHAR(11) NOT NULL,
+	clave VARCHAR(120) NOT NULL,
+	estado TINYINT(1) DEFAULT 1,
+	fechaRegistro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	fechaActualizada TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO estudiante (codigo, nombres, correo, celular, clave, estado, fechaRegistro, fechaActualizada) VALUES
+('E230001','Luis Alvarez', 'luis.alvarez@gmail.com', '9865472555', 'f925916e2754e5e03f75dd58a5733251', 1, '2025-07-11 15:37:05', '2025-07-15 18:26:21'),
+('E230002','Juan Andrade', 'juan.andrade@gmail.com', '8569710025', 'f925916e2754e5e03f75dd58a5733251', 1, '2025-07-11 15:41:27', '2025-07-15 17:43:03'),
+('E240001','José Rojas', 'jrojas00@hotmail.com', '2359874527', 'f925916e2754e5e03f75dd58a5733251', 0, '2025-07-11 15:58:28', '2025-07-15 13:42:44'),
+('E250001','Maria Reyes', 'maria_reyes@gmail.com', '8585856224', 'f925916e2754e5e03f75dd58a5733251', 1, '2025-07-15 13:40:30', '2025-07-15 13:40:30'),
+('E250002','Sarita Lee', 'sarita23@hotmail.com', '4672423754', 'f925916e2754e5e03f75dd58a5733251', 1, '2025-07-15 18:00:59', '2025-07-15 18:00:59');
+
+CREATE TABLE autor (
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	nombres VARCHAR(120) NOT NULL,
+	estado TINYINT(1) DEFAULT 1,
+	fechaRegistro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	fechaActualizada TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO autor (nombres, fechaRegistro, fechaActualizada) VALUES
+('Kumar Pandule', '2017-07-08 12:49:09', '2021-06-28 16:03:28'),
+('Ravi Kumar', '2017-07-08 14:34:55', '2021-06-28 16:03:35'),
+('Sandeep Kumar', '2017-07-08 14:35:02', '2021-06-28 16:03:39');
+
+CREATE TABLE categoria (
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	nombre VARCHAR(150) NOT NULL,
+	estado TINYINT(1) DEFAULT 1,
+	fechaRegistro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	fechaActualizada TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO categoria (nombre, estado, fechaRegistro, fechaActualizada) VALUES
+('Romantica', 0, '2017-07-04 18:35:25', '2017-07-06 16:00:42'),
+('Tecnología', 1, '2017-07-04 18:35:39', '2017-07-08 17:13:03'),
+('Ciencia', 1, '2017-07-04 18:35:55', '2017-07-04 18:35:55'),
+('Administración', 1, '2017-07-04 18:36:16', '2017-07-04 18:36:16');
+
+CREATE TABLE libro (
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	nombre VARCHAR(255) NOT NULL,
+	categoria INT NOT NULL,
+	autor INT NOT NULL,
+	isbn VARCHAR(20) NOT NULL UNIQUE,
+	precio DECIMAL(10,2) NOT NULL,
+	stock INT NOT NULL,
+	estado TINYINT(1) DEFAULT 1,
+	fechaRegistro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	fechaActualizada TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	FOREIGN KEY (categoria) REFERENCES categoria(id),
+	FOREIGN KEY (autor) REFERENCES autor(id)
+)ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO libro (nombre, categoria, autor, isbn, precio, stock, fechaRegistro, fechaActualizada) VALUES
+('Anatomía Humana', 2, 1, '978-970-07485-1-1', 25000.00, 2, '2025-07-08 20:06:12', '2025-07-15 05:56:12'),
+('Recursos Humanos', 3, 2, '978-607-32-0249-7', 15000.00, 3, '2025-07-08 20:17:31', '2025-07-15 06:13:17'),
+('Programación Web', 1, 3, '979-8-87165-969-4', 20000.00, 5, '2025-07-08 20:04:55', '2025-07-15 05:54:41');
+
+CREATE TABLE prestamo (
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	libro VARCHAR(20) NOT NULL,
+	estudiante VARCHAR(20) NOT NULL,
+	fechaPrestamo TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	fechaDevolucion TIMESTAMP NULL DEFAULT (DATE_ADD(DATE_ADD(CURDATE(), INTERVAL 3 DAY), INTERVAL -1 SECOND)) ON UPDATE CURRENT_TIMESTAMP,
+	estado TINYINT(1) DEFAULT 0,
+	multa DECIMAL(10,2) DEFAULT 0.00,
+	FOREIGN KEY (libro) REFERENCES libro(isbn),
+	FOREIGN KEY (estudiante) REFERENCES estudiante(codigo)
+)ENGINE=INNODB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO prestamo (libro, estudiante, fechaPrestamo, fechaDevolucion, estado, multa) VALUES
+('978-970-07485-1-1', 'E230001', '2025-07-15 06:09:47', '2025-07-17 11:15:20', 1, 0.00),
+('978-970-07485-1-1', 'E230002', '2025-07-15 10:59:26', '2025-07-17 23:59:59', 0, 0.00),
+('978-970-07485-1-1', 'E230001', '2025-07-18 06:12:27', '2025-07-23 11:15:23', 1, 5000.00),
+('979-8-87165-969-4', 'E230001', '2025-07-15 06:23:23', '2025-07-18 11:22:29', 1, 2000.00),
+('979-8-87165-969-4', 'E250002', '2025-07-15 18:02:55', '2025-07-17 23:59:59', 0, 0.00);
+
+DELIMITER $$
+
+CREATE TRIGGER insertar_prestamo
+AFTER INSERT ON prestamo
+FOR EACH ROW
+BEGIN
+    UPDATE libro SET stock = stock - 1 WHERE isbn = NEW.libro;
+END$$
+
+CREATE TRIGGER actualizar_prestamo
+AFTER UPDATE ON prestamo
+FOR EACH ROW
+BEGIN
+    UPDATE libro SET stock = stock + 1 WHERE isbn = OLD.libro;
+END$$
+
+CREATE TRIGGER generar_codigo_estudiante
+BEFORE INSERT ON estudiante
+FOR EACH ROW
+BEGIN
+    DECLARE max_consecutivo INT DEFAULT 0;
+    DECLARE anio VARCHAR(2);
+
+    SET anio = DATE_FORMAT(CURDATE(), '%y');
+
+    SELECT IFNULL(MAX(CAST(SUBSTRING(codigo,4) AS UNSIGNED)),0)
+    INTO max_consecutivo
+    FROM estudiante
+    WHERE SUBSTRING(codigo,2,2) = anio;
+
+    SET NEW.codigo = CONCAT('E', anio, LPAD(max_consecutivo + 1, 4, '0'));
+END$$
+
+DELIMITER ;
+DELIMITER $$
